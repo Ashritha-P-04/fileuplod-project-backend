@@ -1,16 +1,30 @@
-var express = require('express');
-var cors = require('cors');
-var bodyparser = require("body-parser");
-var mongoose = require('mongoose');
-var todo = require("./model/todo.model");
+const express = require("express");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+const User = require("./models/file.model");
 
-var app = express();
+const app = express();
 app.use(cors());
-app.use(bodyparser.urlencoded({ extended: false }));
-app.use(bodyparser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use("/uploads", express.static("uploads")); // Serve uploaded files
 
-mongoose.connect('mongodb+srv://akshaya:mongo123@cluster0.7muo0.mongodb.net/akshaya');
-    
-app.listen(5910, () => {
-    console.log('Server is running on port 5910');
-  });
+mongoose.connect("mongodb+srv://ashritha04:chinki%402004@cluster0.jbqlq.mongodb.net/ashritha");
+
+const upload = multer({ dest: "uploads/" });
+
+app.post("/file", upload.single("avatar"), function (req, res) {
+    console.log(req.file);
+    res.send("wait for a while..");
+    fs.rename(req.file.path, `uploads/${req.file.originalname}`, function (err,data) {
+      console.log(err)
+    });
+});
+
+app.listen(5000, () => {
+    console.log("Server is running on port 5000");
+});
