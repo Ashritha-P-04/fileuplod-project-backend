@@ -7,8 +7,9 @@ const File = require("./models/file.model");
 
 const app = express();
 app.use(cors());
+app.use(express.json());
 
-// Multer configuration
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads/");
@@ -17,37 +18,54 @@ const storage = multer.diskStorage({
     cb(null, `${Date.now()}-${file.originalname}`);
   },
 });
-const upload = multer({ storage: storage });
+const upload = multer({ storage });
 
-mongoose.connect("mongodb+srv://ashritha04:chinki%402004@cluster0.jbqlq.mongodb.net/ashritha", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-}).then(() => console.log("MongoDB Connected"))
-  .catch(err => console.error("MongoDB Connection Error:", err));
+mongoose.connect(
+  "mongodb+srv://ashritha04:chinki%402004@cluster0.jbqlq.mongodb.net/ashritha",
+  { useNewUrlParser: true, useUnifiedTopology: true }
+)
+  .then(() => console.log(" MongoDB Connected"))
+  .catch(err => console.error(" MongoDB Connection Error:", err));
 
 app.use("/uploads", express.static("uploads"));
 
 app.post("/file", upload.single("file"), async (req, res) => {
-    try {
-        if (!req.file) {
-            return res.status(400).send("No file uploaded.");
-        }
+  try {
+    
+    
 
-        const { originalname, path, size, mimetype } = req.file;
+    const { username, filename } = req.body;
+    const { originalname, path, size, mimetype } = req.file;
 
-        const file = new File({
-            originalName: originalname,
-            path: path,
-            size: size,
-            mimetype: mimetype,
-        });
+    
 
-        await file.save();
-        res.send("File uploaded successfully.");
-    } catch (err) {
-        console.error("Failed to upload file:", err);
-        res.status(500).send("Failed to upload file.");
-    }
+    const file = new File({
+      username,
+      filename,
+      originalName: originalname,
+      path,
+      size,
+      mimetype,
+    });
+
+    await file.save();
+    res.json({ message: "File uploaded successfully!", file });
+  } catch (err) {
+    console.error(" Error uploading file:", err);
+    res.status(500).json({ error: " Failed to upload file." });
+  }
 });
 
-app.listen(7778, () => console.log("Server running on port 7778"));
+app.get("/getfile", async (req, res) => {
+  try {
+    const files = await File.find();
+   
+    res.json(files);
+  } catch (error) {
+    console.error("Error fetching files:", error);
+    res.status(500).json({ error: "Failed to fetch files." });
+  }
+});
+
+
+app.listen(7778, () => console.log(" Server running on port 7778"));
